@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI, Body
 from models import InputModel
 from final_custom_chatbot import Assistant
@@ -15,3 +16,6 @@ async def receive_user_input(question: InputModel):
     answer = assistant.main(user_question)
 
     return {"answer": answer}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=50388)
