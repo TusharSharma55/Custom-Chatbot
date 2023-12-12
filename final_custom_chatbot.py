@@ -15,7 +15,7 @@ from openai import OpenAI
 class Assistant:
 
     def __init__(self):
-        self.OPENAI_API_KEY = "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"
+        self.OPENAI_API_KEY = "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"
         self.client = OpenAI(api_key=self.OPENAI_API_KEY)
 
     def run_parallel_exec(self, exec_func: Callable, iterable: Iterable, *func_args, **kwargs):
