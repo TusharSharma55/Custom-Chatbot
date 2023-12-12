@@ -18,4 +18,4 @@ async def receive_user_input(question: InputModel):
     return {"answer": answer}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=50388)
+    uvicorn.run(app, host="0.0.0.0", port=50388)
