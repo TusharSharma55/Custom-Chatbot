@@ -15,7 +15,7 @@ from openai import OpenAI
 class Assistant:
 
     def __init__(self):
-        self.OPENAI_API_KEY = "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"
+        self.OPENAI_API_KEY = "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"
         self.client = OpenAI(api_key=self.OPENAI_API_KEY)
         self.vector_store = self.load_data()
 
