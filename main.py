@@ -4,8 +4,10 @@ from models import InputModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from final_custom_chatbot import Assistant
+from chatbot2 import Assistant2
 
-app = FastAPI()
+app = FastAPI(title="Custom Chatbot")
+assistant = Assistant()
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,15 +19,14 @@ app.add_middleware(
 
 
 @app.post("/user-input")
-async def receive_user_input(question: InputModel):
+def receive_user_input(question: InputModel):
     # Store the question in a variable
     user_question = question.question
 
-    # Process the question
-    assistant = Assistant()
     answer = assistant.main(user_question)
 
     return {"answer": answer}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=50388)

@@ -15,8 +15,9 @@ from openai import OpenAI
 class Assistant:
 
     def __init__(self):
-        self.OPENAI_API_KEY = "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"
+        self.OPENAI_API_KEY = "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"
         self.client = OpenAI(api_key=self.OPENAI_API_KEY)
+        self.vector_store = self.load_data()
 
     def run_parallel_exec(self, exec_func: Callable, iterable: Iterable, *func_args, **kwargs):
         with concurrent.futures.ThreadPoolExecutor(
@@ -57,7 +58,7 @@ class Assistant:
         print("Parsing {}".format(url))
         return self.parse_site_text(site_text)
 
-    def main(self, user_question: str):
+    def load_data(self):
         with open("sitemap.xml", "r") as file:
             xml_data = file.read()
 
@@ -90,35 +91,37 @@ class Assistant:
 
         vectorStore_openAI = FAISS.from_documents(docs, embeddings)
 
-        while True:
-            query = user_question.strip().lower()
-            # query = input("Question: ").strip().lower()
-            if query in ['exit', 'no']:
-                print("Exiting chat. Goodbye!")
-                break
+        return vectorStore_openAI
 
-            prompt = """You are a helpful assistant for the users of FiftyFive Technologies Ltd. You will be given a context and a question, and you will answer the question based on the context
-            by formulating a brief and relevant answer.
+    def main(self, user_question: str):
+        query = user_question.strip().lower()
+        # query = input("Question: ").strip().lower()
+        if query in ['exit']:
+            print("Exiting chat. Goodbye!")
+            return "Bye"
 
-            Here is the context:
-            {context}
+        prompt = """You are a helpful assistant for the users of FiftyFive Technologies Ltd. You will be given a context and a question, and you will answer the question based on the context
+        by formulating a brief and relevant answer. If the user sends "Hello", Don't go through the context, only respond him with "Hi there."
 
-            Question: {question}
-            """
+        Here is the context:
+        {context}
 
-            docs = vectorStore_openAI.similarity_search(query, k=3)
-            context = "\n".join([doc.page_content for doc in docs])
+        Question: {question}
+        """
 
-            output = self.client.chat.completions.create(model="gpt-3.5-turbo", temperature=0, messages=[
-                {"role": "user", "content": prompt.format(context=context, question=query)}])
+        docs = self.vector_store.similarity_search(query, k=3)
+        context = "\n".join([doc.page_content for doc in docs])
 
-            sources = ', '.join(x.metadata.get("source") for x in docs)
-            print(output.choices[0].message.content +
-                  f"\n\n Here are the sources: {sources}" + "\n")
+        output = self.client.chat.completions.create(model="gpt-3.5-turbo", temperature=0, messages=[
+            {"role": "user", "content": prompt.format(context=context, question=query)}])
 
-            output_statement = output.choices[0].message.content + \
-                f"\n\n Here are the sources: {sources}" + "\n"
-            return output_statement
+        sources = ', '.join(x.metadata.get("source") for x in docs)
+        print(output.choices[0].message.content +
+              f"\n\n Here are the sources: {sources}" + "\n")
+
+        output_statement = output.choices[0].message.content + \
+            f"\n\n Here are the sources: {sources}" + "\n"
+        return output_statement
 
 
 if __name__ == "__main__":
