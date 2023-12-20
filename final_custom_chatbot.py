@@ -15,7 +15,7 @@ from openai import OpenAI
 class Assistant:
 
     def __init__(self):
-        self.OPENAI_API_KEY = "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"
+        self.OPENAI_API_KEY = "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"
         self.client = OpenAI(api_key=self.OPENAI_API_KEY)
         self.vector_store = self.load_data()
 
@@ -100,13 +100,15 @@ class Assistant:
             print("Exiting chat. Goodbye!")
             return "Bye"
 
-        prompt = """You are a helpful assistant for the users of FiftyFive Technologies Ltd. You will be given a context and a question, and you will answer the question based on the context
-        by formulating a brief and relevant answer. If the user sends "Hello", Don't go through the context, only respond him with "Hi there."
+        prompt = """You are a helpful assistant for the users of FiftyFive Technologies Ltd. You will be given a context and a question, 
+        and you will answer the question based on the context by formulating a brief and relevant answer. If the user sends "Hello," 
+        don't go through the context; only respond with "Hi there.""
 
         Here is the context:
         {context}
 
         Question: {question}
+        Response Length: Please ensure your response is within 100-150 words.
         """
 
         docs = self.vector_store.similarity_search(query, k=3)
@@ -119,8 +121,11 @@ class Assistant:
         print(output.choices[0].message.content +
               f"\n\n Here are the sources: {sources}" + "\n")
 
-        output_statement = output.choices[0].message.content + \
-            f"\n\n Here are the sources: {sources}" + "\n"
+        # output_statement = output.choices[0].message.content + \
+        #     f"\n\n Here are the sources: {sources}" + "\n"
+
+        output_statement = output.choices[0].message.content + "\n"
+
         return output_statement
 
 
