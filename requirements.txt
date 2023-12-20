@@ -2,7 +2,8 @@ faiss-cpu==1.7.4
 langchain
 openai
 BeautifulSoup4==4.12.2
-sentence-transformers
+# sentence-transformers
 fastapi
 uvicorn
-# huggingface_hub
+huggingface_hub
+python-dotenv

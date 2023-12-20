@@ -1,22 +1,29 @@
 import requests
+import os
 import re
 import json
+import pickle
 import concurrent.futures
 from typing import Callable, Iterable
 from langchain.docstore.document import Document
 from pathlib import Path
 from bs4 import BeautifulSoup
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.embeddings import HuggingFaceInferenceAPIEmbeddings
 from langchain.vectorstores import FAISS
 from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Assistant:
 
     def __init__(self):
-        self.OPENAI_API_KEY = "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"
+        self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+        self.HF_TOKEN = os.getenv("HF_TOKEN")
         self.client = OpenAI(api_key=self.OPENAI_API_KEY)
+        self.vector_store_path = Path("url_texts.pkl")
         self.vector_store = self.load_data()
 
     def run_parallel_exec(self, exec_func: Callable, iterable: Iterable, *func_args, **kwargs):
@@ -59,6 +66,10 @@ class Assistant:
         return self.parse_site_text(site_text)
 
     def load_data(self):
+        if self.vector_store_path.exists():
+            with open(self.vector_store_path, "rb") as file:
+                return pickle.load(file)
+
         with open("sitemap.xml", "r") as file:
             xml_data = file.read()
 
@@ -85,11 +96,16 @@ class Assistant:
 
         docs = text_splitter.split_documents(documents)
 
-        embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        embeddings = HuggingFaceInferenceAPIEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            # repo_id="sentence-transformers/all-mpnet-base-v2",
+            api_key=self.HF_TOKEN,
         )
 
         vectorStore_openAI = FAISS.from_documents(docs, embeddings)
+
+        with open(self.vector_store_path, "wb") as file:
+            pickle.dump(vectorStore_openAI, file)
 
         return vectorStore_openAI
 
@@ -108,7 +124,7 @@ class Assistant:
         {context}
 
         Question: {question}
-        Response Length: Please ensure your response is within 100-150 words.
+        Response Length: Please ensure your response is within 100-120 words.
         """
 
         docs = self.vector_store.similarity_search(query, k=3)
