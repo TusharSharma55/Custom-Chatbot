@@ -219,8 +219,7 @@ class Assistant:
         )
 
         sources = ', '.join(x.metadata.get("source") for x in docs)
-        output_statement = output.choices[0].message.content + \
-            "\n\nHere are the sources: " + sources + "\n"
+        output_statement = output.choices[0].message.content + "\n"
 
         return output_statement
 
